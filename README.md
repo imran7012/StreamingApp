@@ -3,19 +3,38 @@
 
 ## Overall Architecture
 
-    AWS
-   │
-   ├── VPC
-   │   ├── Public Subnet → Web EC2 (MERN App)
-   │   └── Private Subnet → DB EC2 (MongoDB)
-   │
-   ├── Internet Gateway → Public Internet Access
-   ├── NAT Gateway → Private subnet outbound access
-   │
-   ├── Security Groups
-   ├── IAM Roles
-   │
-   └── Outputs → Web Server Public IP
+            ┌──────────────────────────────┐
+            │            Internet          │
+            └──────────────┬───────────────┘
+                           │
+                    Internet Gateway
+                           │
+                ┌──────────▼──────────┐
+                │        AWS VPC      │
+                │                     │
+                │  ┌───────────────┐  │
+                │  │ Public Subnet │  │
+                │  │               │  │
+                │  │  Web EC2      │  │
+                │  │  (MERN App)   │  │
+                │  └───────┬───────┘  │
+                │          │          │
+                │          │ NAT GW   │
+                │          ▼          │
+                │  ┌───────────────┐  │
+                │  │ Private Subnet│  │
+                │  │               │  │
+                │  │  DB EC2       │  │
+                │  │  (MongoDB)    │  │
+                │  └───────────────┘  │
+                │                     │
+                │  Security Groups    │
+                │  IAM Roles          │
+                └──────────┬──────────┘
+                           │
+                           ▼
+                    Terraform Outputs
+                   (Web Server Public IP)
 
 ---
 
@@ -39,18 +58,19 @@
 
 ## Terraform Project Structure (Module Format):
 
-    terraform-travelmemory/
-   │
-   ├── main.tf
-   ├── variables.tf
-   ├── outputs.tf
-   ├── terraform.tfvars
-   │
-   ├── modules/
-   │   ├── vpc/
-   │   ├── ec2/
-   │   ├── security/
-   │   └── iam/
+      terraform-travelmemory/
+    │
+    ├── main.tf
+    ├── variables.tf
+    ├── outputs.tf
+    ├── terraform.tfvars
+    │
+    ├── modules/
+    │   ├── vpc/
+    │   ├── ec2/
+    │   ├── security/
+    │   └── iam/
+
 
 <img width="715" height="782" alt="image" src="https://github.com/user-attachments/assets/29e817a9-adbf-4bfe-8a92-e5ecbd71e76c" />
 
@@ -70,6 +90,42 @@
 
    terraform plan
 
+## Step 4 — Apply
+
+   terraform apply
+
+
+## Overall Architecture Ansible
+
+## Ansible Project Structure
+
+    ansible-travelmemory/
+    │
+    ├── inventory.ini
+    ├── ansible.cfg
+    ├── playbook.yml
+    │
+    ├── group_vars/
+    │   └── all.yml
+    │
+    ├── roles/
+    │   ├── web/
+    │   │   └── tasks/main.yml
+    │   └── db/
+    │       └── tasks/main.yml
+
+## Step 1 — Install Ansible
+
+  pip install ansible
+
+
+## Step 2 — Run Ansible
+
+  ansible-playbook playbook.yml
+
+## Step 3 - Application
+
+<img width="1910" height="978" alt="image" src="https://github.com/user-attachments/assets/ebcf15bb-2b7a-4918-9b8c-e358085d036a" />
 
 
 
