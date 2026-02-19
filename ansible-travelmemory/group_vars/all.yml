@@ -1,0 +1,5 @@
+mongo_root_user: admin
+mongo_root_password: Admin@123
+mongo_db_name: travelmemory
+app_repo: https://github.com/UnpredictablePrashant/TravelMemory.git
+app_dir: /home/ec2-user/TravelMemory

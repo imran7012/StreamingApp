@@ -1,0 +1,46 @@
+- name: Install NodeJS
+  shell: |
+    curl -fsSL https://rpm.nodesource.com/setup_18.x | bash -
+    yum install -y nodejs
+
+- name: Install Git
+  dnf:
+    name: git
+    state: present
+
+- name: Clone Repository
+  git:
+    repo: "{{ app_repo }}"
+    dest: "{{ app_dir }}"
+
+- name: Install Backend Dependencies
+  npm:
+    path: "{{ app_dir }}/backend"
+
+- name: Install Frontend Dependencies
+  npm:
+    path: "{{ app_dir }}/frontend"
+
+- name: Create .env file
+  copy:
+    dest: "{{ app_dir }}/backend/.env"
+    content: |
+      MONGO_URI=mongodb://{{ mongo_root_user }}:{{ mongo_root_password }}@<DB_PRIVATE_IP>:27017/{{ mongo_db_name }}?authSource=admin
+      PORT=5000
+
+- name: Start Backend
+  shell: |
+    cd {{ app_dir }}/backend
+    nohup npm start &
+
+
+- name: Disable root login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+
+- name: Restart SSH
+  service:
+    name: sshd
+    state: restarted
