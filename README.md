@@ -1,138 +1,77 @@
-# StreamingApp
+## Graded Assignment on Deploying a MERN Application on AWS
 
-Stream premium video content, host live watch parties, and manage your catalogue with a modern microservice architecture. The platform now ships with a production-ready admin portal, real-time chat, S3-backed adaptive streaming, and a redesigned cinematic frontend experience.
 
-## Architecture
+## Overall Architecture
 
-| Service | Port | Description |
-| --- | --- | --- |
-| `authService` | 3001 | User authentication, registration, JWT issuance |
-| `streamingService` | 3002 | Video catalogue, S3 playback endpoints, public APIs |
-| `adminService` | 3003 | Dedicated admin microservice for asset management and uploads |
-| `chatService` | 3004 | Websocket + REST chat for live watch parties |
-| `frontend` | 3000 | React SPA with revamped UI and integrated chat |
-| `mongo` | 27017 | Shared MongoDB instance |
+    AWS
+   │
+   ├── VPC
+   │   ├── Public Subnet → Web EC2 (MERN App)
+   │   └── Private Subnet → DB EC2 (MongoDB)
+   │
+   ├── Internet Gateway → Public Internet Access
+   ├── NAT Gateway → Private subnet outbound access
+   │
+   ├── Security Groups
+   ├── IAM Roles
+   │
+   └── Outputs → Web Server Public IP
 
-All backend services share common database models and utilities through `backend/common`.
+---
 
-## Environment Configuration
+## Step 1 — Install & Configure Tools
+ 
+ Terraform
 
-Create an `.env` for each service (or export variables before running). All services accept the standard AWS credentials for S3 access.
+ AWS CLI
 
-### Auth Service (`backend/authService/.env`)
-```ini
-PORT=3001
-MONGO_URI=mongodb://localhost:27017/streamingapp
-JWT_SECRET=changeme
-CLIENT_URLS=http://localhost:3000
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=ap-south-1
-AWS_S3_BUCKET=
-```
+ Git
 
-### Streaming Service (`backend/streamingService/.env`)
-```ini
-PORT=3002
-MONGO_URI=mongodb://localhost:27017/streamingapp
-JWT_SECRET=changeme
-CLIENT_URLS=http://localhost:3000
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=ap-south-1
-AWS_S3_BUCKET=
-AWS_CDN_URL=
-STREAMING_PUBLIC_URL=http://localhost:3002
-```
 
-### Admin Service (`backend/adminService/.env`)
-```ini
-PORT=3003
-MONGO_URI=mongodb://localhost:27017/streamingapp
-JWT_SECRET=changeme
-CLIENT_URLS=http://localhost:3000
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_REGION=ap-south-1
-AWS_S3_BUCKET=
-```
+<img width="885" height="112" alt="image" src="https://github.com/user-attachments/assets/cbfffa51-98cd-4878-ad23-10863837c751" />
 
-### Chat Service (`backend/chatService/.env`)
-```ini
-PORT=3004
-MONGO_URI=mongodb://localhost:27017/streamingapp
-JWT_SECRET=changeme
-CLIENT_URLS=http://localhost:3000
-```
+## Step 2 — Configure AWS CLI
 
-### Frontend build variables (`frontend/.env` or Docker build args)
-```ini
-REACT_APP_AUTH_API_URL=http://localhost:3001/api
-REACT_APP_STREAMING_API_URL=http://localhost:3002/api
-REACT_APP_STREAMING_PUBLIC_URL=http://localhost:3002
-REACT_APP_ADMIN_API_URL=http://localhost:3003/api/admin
-REACT_APP_CHAT_API_URL=http://localhost:3004/api/chat
-REACT_APP_CHAT_SOCKET_URL=http://localhost:3004
-```
+<img width="680" height="141" alt="image" src="https://github.com/user-attachments/assets/43faccbc-2e1b-46b9-acf3-8b57295b5e78" />
 
-## Running with Docker Compose
+---
 
-1. Populate the environment variables above (or rely on the defaults baked into `docker-compose.yml`).
-2. Build and start the stack:
-   ```bash
-   docker-compose up --build
-   ```
-3. Navigate to `http://localhost:3000` for the web app.
 
-The compose file provisions MongoDB plus all four Node.js microservices. S3 credentials are optional for local testing—you can still browse seeded metadata, but streaming requires valid S3 objects.
+## Terraform Project Structure (Module Format):
 
-## Local Development
+    terraform-travelmemory/
+   │
+   ├── main.tf
+   ├── variables.tf
+   ├── outputs.tf
+   ├── terraform.tfvars
+   │
+   ├── modules/
+   │   ├── vpc/
+   │   ├── ec2/
+   │   ├── security/
+   │   └── iam/
 
-Install dependencies for each service:
+<img width="715" height="782" alt="image" src="https://github.com/user-attachments/assets/29e817a9-adbf-4bfe-8a92-e5ecbd71e76c" />
 
-```bash
-# auth service
-cd backend/authService && npm install
+---
 
-# streaming service
-cd ../streamingService && npm install
+## How to Deploy:
 
-# admin service
-cd ../adminService && npm install
+ ## Step 1 — Initialize
 
-# chat service
-cd ../chatService && npm install
+   terraform init
+   
+ ## Step 2 — Validate
 
-# frontend
-cd ../../frontend && npm install
-```
+   terraform validate
 
-Run the services (in separate terminals) after starting MongoDB:
+ ## Step 3 — Plan
 
-```bash
-cd backend/authService && npm run dev
-cd backend/streamingService && npm run dev
-cd backend/adminService && npm run dev
-cd backend/chatService && npm run dev
-cd frontend && npm start
-```
+   terraform plan
 
-## Feature Highlights
 
-- **S3-backed adaptive streaming** with secure signed uploads for admins.
-- **Dedicated admin microservice** for video ingestion, metadata management, and featured curation.
-- **Real-time chat** overlay in the player (Socket.IO + persistent message history).
-- **Modern React experience** featuring cinematic hero sections, dynamic carousels, and responsive design.
-- **Role-aware access control** across frontend routes and backend microservices.
 
-## Testing
 
-Automated tests are not yet included. Recommended smoke checks:
 
-1. Register and log in through the web UI.
-2. Upload a small video + thumbnail via the admin dashboard (requires valid S3 credentials).
-3. Confirm playback from the browse page and verify that chat messages broadcast between multiple browser tabs.
 
-## License
-
-MIT © StreamFlix Team
